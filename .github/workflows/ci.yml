@@ -39,15 +39,17 @@ jobs:
 
     - name: Build and push Docker image
       run: |
-        IMAGE="ghcr.io/${{ github.repository }}:${{ github.sha }}"
+        IMAGE="ghcr.io/${{ github.repository }}"
+        SHA_TAG="${IMAGE}:backend-${{ github.sha }}"
         docker build \
           --label git_sha=${{ github.sha }} \
           --label build_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
           --label version=${{ github.ref_name }} \
           --label repository=${{ github.repository }} \
-          -t "$IMAGE" \
+          --label org.opencontainers.image.source=https://github.com/${{ github.repository }} \
+          -t "$SHA_TAG" \
           .
-        docker push "$IMAGE"
+        docker push "$SHA_TAG"
 
   sbom:
     runs-on: lunar
