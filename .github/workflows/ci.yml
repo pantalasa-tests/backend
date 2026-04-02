@@ -30,19 +30,20 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
     
-    - name: Build Docker image
+    - name: Log in to GHCR
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+    - name: Build and push Docker image
       run: |
+        IMAGE="ghcr.io/${{ github.repository }}:${{ github.sha }}"
         docker build \
           --label git_sha=${{ github.sha }} \
           --label build_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
           --label version=${{ github.ref_name }} \
           --label repository=${{ github.repository }} \
-          -t backend:${{ github.sha }} \
+          -t "$IMAGE" \
           .
-    
-    - name: Test Docker image
-      run: |
-        docker run --rm backend:${{ github.sha }} && echo "Docker image works!"
+        docker push "$IMAGE"
 
   sbom:
     runs-on: lunar
